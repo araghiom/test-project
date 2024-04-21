@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Grid, Link, Stack } from '@mui/material'
+import { Autocomplete, Button, Grid, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import fetch from 'cross-fetch'
 import { Hits, Recipe } from '../../models'
@@ -12,7 +12,7 @@ export function RecipeList(props: RecipeListProps) {
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [navigateLink, setNavigateLink] =
     useState<{ next?: string; self?: string; back?: string }>()
-  const [pending, setPending] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(false)
 
   // first call api
   useEffect(() => {
@@ -21,7 +21,7 @@ export function RecipeList(props: RecipeListProps) {
 
   // fetch function
   const fetchRecipes = async (url: string) => {
-    setPending(true)
+    setLoading(true)
     try {
       const response = await fetch(url)
       if (!response.ok) throw new Error('Network response was not ok')
@@ -35,7 +35,7 @@ export function RecipeList(props: RecipeListProps) {
     } catch (error) {
       console.error('Failed to fetch recipes:', error)
     }
-    setPending(false)
+    setLoading(false)
   }
 
   // navigation function
@@ -74,7 +74,7 @@ export function RecipeList(props: RecipeListProps) {
       <Grid container spacing={4}>
         {recipes?.map((r) => (
           <Grid item sm={3} key={r.uri}>
-            <RecipeItem recipe={r} />
+            <RecipeItem recipe={r} loading={loading} />
           </Grid>
         ))}
       </Grid>
