@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react'
-import { Recipe } from '../models'
+import { Recipe } from '../../models'
 
 import RecipeItem from './recipe-item'
 

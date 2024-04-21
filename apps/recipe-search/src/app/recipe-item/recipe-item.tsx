@@ -11,7 +11,7 @@ import {
 import MoreVertIcon from '@mui/icons-material/MoreVert'
 import FavoriteIcon from '@mui/icons-material/Favorite'
 import ShareIcon from '@mui/icons-material/Share'
-import { Recipe } from '../models'
+import { Recipe } from '../../models'
 
 export interface RecipeItemProps {
   recipe: Recipe

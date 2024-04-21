@@ -1,44 +1,97 @@
-import { Grid } from '@mui/material'
+import { Autocomplete, Box, Button, Grid, Link, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import fetch from 'cross-fetch'
-import { Hits, Recipe } from '../models'
+import { Hits, Recipe } from '../../models'
 import RecipeItem from '../recipe-item/recipe-item'
+import { environment } from '../../environments/environment'
 
 /* eslint-disable-next-line */
 export interface RecipeListProps {}
 
 export function RecipeList(props: RecipeListProps) {
-  const [recipes, setRecipes] = useState<Recipe[]>()
+  const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [navigateLink, setNavigateLink] =
+    useState<{ next?: string; self?: string; back?: string }>()
+  const [pending, setPending] = useState<boolean>(false)
 
+  // first call api
   useEffect(() => {
-    const getApiResponse = async <T,>(): Promise<T> => {
-      const appId = 'bc839848'
-      const appKey = '8e38899795058a3b2b2bc4911653b077'
-      const q = 'kale salad'
-
-      const api_url = `https://api.edamam.com/api/recipes/v2?type=public&app_id=${appId}&app_key=${appKey}&q=${q}`
-
-      const response = await fetch(api_url)
-      const data = (await response.json()) as Promise<T>
-
-      return data
-    }
-    const fetchRecipes = async () => {
-      const response = await getApiResponse<Hits>()
-      console.log(response)
-      setRecipes(response.hits?.map((h) => h.recipe))
-    }
-    fetchRecipes()
+    fetchRecipes(`${environment?.api_baseUrl}&q=kale`)
   }, [])
 
+  // fetch function
+  const fetchRecipes = async (url: string) => {
+    setPending(true)
+    try {
+      const response = await fetch(url)
+      if (!response.ok) throw new Error('Network response was not ok')
+      const data: Hits = await response.json()
+      setRecipes(data.hits?.map((h) => h.recipe))
+      setNavigateLink((prev) => ({
+        next: data?._links?.next?.href,
+        self: url,
+        back: prev?.self,
+      }))
+    } catch (error) {
+      console.error('Failed to fetch recipes:', error)
+    }
+    setPending(false)
+  }
+
+  // navigation function
+  const navigatePage = (navigateTo: 'back' | 'next') => {
+    const url = navigateTo === 'next' ? navigateLink?.next : navigateLink?.back
+    if (url) {
+      fetchRecipes(url)
+    }
+  }
   return (
-    <Grid container spacing={4}>
-      {recipes?.map((r) => (
-        <Grid item sm={3} key={r.uri}>
-          <RecipeItem recipe={r} />
-        </Grid>
-      ))}
-    </Grid>
+    <>
+      {/* <Autocomplete
+        multiple
+        id="tags-filled"
+        options={recipes?.map((option) => option.)}
+        defaultValue={[top100Films[13].title]}
+        freeSolo
+        renderTags={(value: readonly string[], getTagProps) =>
+          value.map((option: string, index: number) => (
+            <Chip
+              variant="outlined"
+              label={option}
+              {...getTagProps({ index })}
+            />
+          ))
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            variant="filled"
+            label="freeSolo"
+            placeholder="Favorites"
+          />
+        )}
+      /> */}
+      <Grid container spacing={4}>
+        {recipes?.map((r) => (
+          <Grid item sm={3} key={r.uri}>
+            <RecipeItem recipe={r} />
+          </Grid>
+        ))}
+      </Grid>
+      <Stack direction="row" justifyContent="space-between" margin="15px">
+        <Button
+          onClick={() => navigatePage?.('back')}
+          size="large"
+          disabled={navigateLink?.back?.length ? false : true}
+        >
+          back
+        </Button>
+
+        <Button onClick={() => navigatePage?.('next')} size="large">
+          next
+        </Button>
+      </Stack>
+    </>
   )
 }
 
