@@ -11,9 +11,9 @@ export function RecipeList(props: RecipeListProps) {
   const [recipes, setRecipes] = useState<Recipe[]>()
 
   useEffect(() => {
-    const getApiResponse = async <T extends unknown>(): Promise<T> => {
-      const appId = '60247ce5'
-      const appKey = 'f4921915a1c5068a745190413e8f07dd'
+    const getApiResponse = async <T,>(): Promise<T> => {
+      const appId = 'bc839848'
+      const appKey = '8e38899795058a3b2b2bc4911653b077'
       const q = 'kale salad'
 
       const api_url = `https://api.edamam.com/api/recipes/v2?type=public&app_id=${appId}&app_key=${appKey}&q=${q}`
@@ -25,8 +25,8 @@ export function RecipeList(props: RecipeListProps) {
     }
     const fetchRecipes = async () => {
       const response = await getApiResponse<Hits>()
-
-      setRecipes(response.hits.map((h) => h.recipe))
+      console.log(response)
+      setRecipes(response.hits?.map((h) => h.recipe))
     }
     fetchRecipes()
   }, [])
