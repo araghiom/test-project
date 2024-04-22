@@ -1,23 +1,32 @@
-import { Autocomplete, Button, Grid, Stack } from '@mui/material'
+import {
+  Box,
+  Button,
+  Chip,
+  Grid,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import fetch from 'cross-fetch'
-import { Hits, Recipe } from '../../models'
+import { GroupFilterOption, Hits, Recipe } from '../../models'
 import RecipeItem from '../recipe-item/recipe-item'
 import { environment } from '../../environments/environment'
+import Autocomplete from '@mui/material/Autocomplete'
+import useDebounce from '../../utils/hook/useDebounce'
+import SearchIcon from '@mui/icons-material/Search'
+import { initialGroupFilter } from '../../constant/recipe.constant'
 
-/* eslint-disable-next-line */
-export interface RecipeListProps {}
-
-export function RecipeList(props: RecipeListProps) {
+export function RecipeList() {
   const [recipes, setRecipes] = useState<Recipe[]>([])
+  const [search, setSearch] = useState<string>()
+  const [newValue, setNewValue] = useState<string>()
   const [navigateLink, setNavigateLink] =
     useState<{ next?: string; self?: string; back?: string }>()
   const [loading, setLoading] = useState<boolean>(false)
 
-  // first call api
-  useEffect(() => {
-    fetchRecipes(`${environment?.api_baseUrl}&q=kale`)
-  }, [])
+  // debounce hook
+  const keyWord = useDebounce(search)
 
   // fetch function
   const fetchRecipes = async (url: string) => {
@@ -45,38 +54,135 @@ export function RecipeList(props: RecipeListProps) {
       fetchRecipes(url)
     }
   }
+  // handle press enter for search q
+  const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      setSearch(newValue)
+    }
+  }
+
+  function groupFiltersByGroup(
+    filterOptions: GroupFilterOption[]
+  ): Record<string, string[]> {
+    return filterOptions.reduce((acc, { group, filter }) => {
+      acc[group] = acc[group] || []
+      acc[group].push(filter.title)
+      return acc
+    }, {} as Record<string, string[]>)
+  }
+
+  /// fetch by filters
+  const handleChangeFilters = (value: (string | GroupFilterOption)[]): void => {
+    const filterOptions = value.filter(
+      (item): item is GroupFilterOption => typeof item !== 'string'
+    )
+    const filters = groupFiltersByGroup(filterOptions)
+    const query = filters['mealType']?.join(',')
+    if (query) {
+      fetchRecipes(`${environment?.api_baseUrl}&q=${query}`)
+    }
+  }
+  // fetch by keyword
+  useEffect(() => {
+    keyWord?.length && fetchRecipes(`${environment?.api_baseUrl}&q=${keyWord}`)
+  }, [keyWord])
+
+  // first call api
+  useEffect(() => {
+    fetchRecipes(`${environment?.api_baseUrl}`)
+  }, [])
+
   return (
     <>
-      {/* <Autocomplete
-        multiple
-        id="tags-filled"
-        options={recipes?.map((option) => option.)}
-        defaultValue={[top100Films[13].title]}
-        freeSolo
-        renderTags={(value: readonly string[], getTagProps) =>
-          value.map((option: string, index: number) => (
-            <Chip
-              variant="outlined"
-              label={option}
-              {...getTagProps({ index })}
-            />
-          ))
-        }
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            variant="filled"
-            label="freeSolo"
-            placeholder="Favorites"
-          />
-        )}
-      /> */}
+      <Stack marginBottom="30px">
+        <Autocomplete
+          id="tags-filled"
+          freeSolo
+          multiple
+          onChange={(e, value) => handleChangeFilters(value)}
+          options={initialGroupFilter?.map((item) => item)}
+          groupBy={(option) => option.group}
+          renderInput={(params) => {
+            return (
+              <TextField
+                {...params}
+                variant="filled"
+                label="Search Recipes"
+                placeholder="Favorites"
+                onKeyDown={handleKeyPress}
+                onChange={(e) => setNewValue(e?.target?.value)}
+              />
+            )
+          }}
+          renderGroup={(params) => (
+            <li key={params.key}>
+              <Typography
+                variant="h6"
+                gutterBottom
+                color="GrayText"
+                sx={{ padding: '5px' }}
+              >
+                {params.group}
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                {params?.children}
+              </Typography>
+            </li>
+          )}
+          renderTags={(value, getTagProps) =>
+            value.map((option, index) => {
+              if (typeof option === 'string') {
+                return (
+                  <Chip
+                    {...getTagProps({ index })}
+                    icon={<SearchIcon />}
+                    label={option}
+                  />
+                )
+              }
+              return (
+                <Chip
+                  {...getTagProps({ index })}
+                  icon={option?.filter?.icon}
+                  label={option?.filter?.title}
+                />
+              )
+            })
+          }
+          getOptionLabel={(option) => {
+            if (typeof option === 'string') {
+              return option
+            }
+            return option?.filter?.title
+          }}
+          noOptionsText={
+            <div>
+              <Typography variant="h6" gutterBottom>
+                'search your favorite food.'
+              </Typography>
+            </div>
+          }
+        />
+      </Stack>
       <Grid container spacing={4}>
-        {recipes?.map((r) => (
-          <Grid item sm={3} key={r.uri}>
-            <RecipeItem recipe={r} loading={loading} />
+        {recipes?.length ? (
+          recipes?.map((r) => (
+            <Grid item sm={3} key={r.uri}>
+              <RecipeItem recipe={r} loading={loading} />
+            </Grid>
+          ))
+        ) : (
+          <Grid
+            container
+            justifyContent={'center'}
+            alignItems={'center'}
+            height={500}
+          >
+            <Typography variant="h2" gutterBottom>
+              Please Select filter
+            </Typography>
           </Grid>
-        ))}
+        )}
       </Grid>
       <Stack direction="row" justifyContent="space-between" margin="15px">
         <Button

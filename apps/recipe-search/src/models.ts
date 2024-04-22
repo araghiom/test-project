@@ -34,3 +34,13 @@ export interface Recipe {
   url: string
   yield: number
 }
+
+export interface GroupFilterOption {
+  filter: {
+    id: number
+    title: string
+    group: string
+    icon: any
+  }
+  group: string
+}
