@@ -77,20 +77,32 @@ export function RecipeList() {
       (item): item is GroupFilterOption => typeof item !== 'string'
     )
     const filters = groupFiltersByGroup(filterOptions)
-    const query = filters['mealType']?.join(',')
-    if (query) {
-      fetchRecipes(`${environment?.api_baseUrl}&q=${query}`)
+    const queryParams = Object.entries(filters)
+      .map(([key, titles]) =>
+        titles
+          .map(
+            (title) => `${encodeURIComponent(key)}=${encodeURIComponent(title)}`
+          )
+          .join('&')
+      )
+      .join('&')
+
+    const keyWordPart =
+      (keyWord?.length ?? 0) > 0
+        ? `&q=${encodeURIComponent(keyWord ?? '')}`
+        : ''
+    const queryParamsPart =
+      (queryParams?.length ?? 0) > 0 ? `&${queryParams}` : ''
+    const url = `${environment.api_baseUrl}${queryParamsPart}${
+      keyWordPart ? keyWordPart : ''
+    }`
+
+    if (queryParams || keyWordPart) {
+      fetchRecipes(url)
+    } else {
+      fetchRecipes(`${environment?.api_baseUrl}`)
     }
   }
-  // fetch by keyword
-  useEffect(() => {
-    keyWord?.length && fetchRecipes(`${environment?.api_baseUrl}&q=${keyWord}`)
-  }, [keyWord])
-
-  // first call api
-  useEffect(() => {
-    fetchRecipes(`${environment?.api_baseUrl}`)
-  }, [])
 
   return (
     <>
