@@ -3,54 +3,99 @@ import BoltIcon from '@mui/icons-material/Bolt'
 import { GroupFilterOption } from '../models'
 
 export const initialGroupFilter: GroupFilterOption[] = [
+  // Meal Types
   {
     filter: {
       id: 1,
       title: 'breakfast',
-      group: 'dishType',
+      group: 'mealType',
       icon: <FlagIcon />,
     },
     group: 'mealType',
   },
   {
-    filter: { id: 2, title: 'lunch', group: 'meal type', icon: <FlagIcon /> },
+    filter: {
+      id: 2,
+      title: 'brunch',
+      group: 'mealType',
+      icon: <FlagIcon />,
+    },
     group: 'mealType',
   },
   {
     filter: {
       id: 3,
       title: 'lunch/dinner',
-      group: 'meal type',
+      group: 'mealType',
       icon: <FlagIcon />,
     },
     group: 'mealType',
   },
-
   {
     filter: {
       id: 4,
-      title: 'breakfast',
-      group: 'cuisineType',
-      icon: <BoltIcon />,
+      title: 'snack',
+      group: 'mealType',
+      icon: <FlagIcon />,
     },
-    group: 'diet',
+    group: 'mealType',
   },
   {
     filter: {
       id: 5,
-      title: 'brunch',
-      group: 'cuisineType',
-      icon: <BoltIcon />,
+      title: 'teatime',
+      group: 'mealType',
+      icon: <FlagIcon />,
     },
-    group: 'diet',
+    group: 'mealType',
   },
+  // Cuisine Types
   {
     filter: {
       id: 6,
-      title: 'teatime',
+      title: 'american',
       group: 'cuisineType',
       icon: <BoltIcon />,
     },
-    group: 'diet',
+    group: 'cuisineType',
   },
+  {
+    filter: {
+      id: 7,
+      title: 'asian',
+      group: 'cuisineType',
+      icon: <BoltIcon />,
+    },
+    group: 'cuisineType',
+  },
+  {
+    filter: {
+      id: 8,
+      title: 'british',
+      group: 'cuisineType',
+      icon: <BoltIcon />,
+    },
+    group: 'cuisineType',
+  },
+  // ... Add additional cuisine types in the same manner
+  // Dish Types
+  {
+    filter: {
+      id: 9,
+      title: 'alcohol cocktail',
+      group: 'dishType',
+      icon: <BoltIcon />,
+    },
+    group: 'dishType',
+  },
+  {
+    filter: {
+      id: 10,
+      title: 'biscuits and cookies',
+      group: 'dishType',
+      icon: <BoltIcon />,
+    },
+    group: 'dishType',
+  },
+  // ... Add additional dish types in the same manner
 ]
